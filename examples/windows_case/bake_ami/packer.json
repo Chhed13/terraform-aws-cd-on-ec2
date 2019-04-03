@@ -1,0 +1,53 @@
+{
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
+    "name": "example_windows_core_2016"
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "us-east-1",
+      "source_ami_filter": {
+        "filters": {
+          "name": "Windows_Server-2016-English-Core-Base-*",
+          "virtualization-type": "hvm",
+          "root-device-type": "ebs"
+        },
+        "owners": ["801119661308"],
+        "most_recent": true
+      },
+      "instance_type": "t3.micro",
+      "communicator": "winrm",
+      "winrm_username": "Administrator",
+      "winrm_timeout": "10m",
+      "ena_support": true,
+      "user_data_file": "userdata.conf",
+      "ami_name": "wa_{{user `name`}}_{{timestamp}}",
+      "ami_description": "{{user `name`}} AMI"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "src/run.py",
+      "destination": "C:\\run.py"
+    },
+    {
+      "type": "file",
+      "source": "src/bootstrap.ps1",
+      "destination": "C:\\bootstrap\\1\\bootstrap.ps1"
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))",
+        "choco install python --version 3.6.0 -y",
+        "New-Service -Name \"dumbService\" -BinaryPathName \"C:\\Python36\\python.exe C:\\run.py\" -StartupType Automatic",
+        "C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\InitializeInstance.ps1 -Schedule"
+      ]
+    }
+  ]
+}
