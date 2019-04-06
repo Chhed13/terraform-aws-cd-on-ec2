@@ -1,22 +1,24 @@
 provider "aws" {
   region  = "us-east-1"
+  profile = "chhed13"
 }
 
-module "windows" {
+data "aws_caller_identity" "current" {}
+
+module "linux" {
   source           = "../../"
-  ami_name         = "Windows_Server-2016-English-Core-Base-*" //"amzn2-ami-hvm-2.0.20180622.1-x86_64-gp2"
-  ami_owner        = "amazon"
+  ami_name         = "myservice_amazon_linux_2*" // or full_name_ami_version
+  ami_owner        = "${data.aws_caller_identity.current.account_id}"
   ami_version      = "*"
   asg_desired_size = 1
   asg_max_size     = 1
   asg_min_size     = 1
   //  bootstrap_dir = ""
   enable_consul    = false
-  env_name         = "some"
-  for_windows      = true
-  full_name        = "MyService"
-  //  health_endpoint = ""
-  //  health_timeout = ""
+  public_access    = true //only for test
+  for_windows      = false
+//    health_endpoint = "http://128.53.75.4:8000/health"
+    health_timeout = "120"
   //  iam_policies = ""
   instance_type    = "t3.micro"
   key_name         = "chhed13"
@@ -31,7 +33,17 @@ module "windows" {
     ENVIRONMENT            = "my"
     MYSERVICE_SPECIAL_INFO = "my_special_info"
   }
+  env_name         = "my"
   service_port     = 8000
+  full_name        = "MyService"
   short_name       = "msr"
   subnet_ids       = ["subnet-f7f961ab"]
 }
+
+//output "health_script" {
+//  value = "${module.linux.health_script}"
+//}
+//
+//output "timeout" {
+//  value = "${module.linux.timeout}"
+//}

@@ -1,12 +1,12 @@
 import time
 import requests
 
-timeout = ${timeout}
+timeout = 120
 start_time = time.time()
 while True:
 
   try:
-    r = requests.get('${endpoint}', verify=False, timeout=1)
+    r = requests.get('http://195.12.12.53:8000/health', verify=False, timeout=1)
     if r.status_code == 200:
       break
 

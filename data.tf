@@ -4,8 +4,11 @@ locals {
   default_bootstrap_dir = "${var.for_windows ? "C:\\bootstrap" : "/opt/bootstrap"}"
   linux_params          = "${join(" ",formatlist("%s='%s'",keys(var.params),values(var.params)))}"
   windows_params        = "${join("\n",formatlist("$env:%s=\"%s\"",keys(var.params),values(var.params)))}"
-  health_script         = "${ var.health_endpoint == "" ? format("import time; time.sleep(%v)", var.health_timeout) : data.template_file.health.rendered }"
+
   default_health_timeout = "${ var.for_windows ? 480 : 240}"
+  health_timeout         = "${var.health_timeout == 0 ? local.default_health_timeout : var.health_timeout}"
+  health_script          = "${ var.health_endpoint == "" ? format("import time; time.sleep(%v)", local.health_timeout) : data.template_file.health.rendered }"
+
 }
 
 data "aws_ami" "image" {
@@ -34,7 +37,15 @@ data "template_file" "userdata" {
 data template_file health {
   template = "${file("${path.module}/health.py.tpl")}"
   vars {
-    timeout  = "${var.health_timeout == 0 ? local.default_health_timeout : var.health_timeout}"
+    timeout  = "${local.health_timeout}"
     endpoint = "${var.health_endpoint}"
   }
 }
+
+//output "health_script" {
+//  value = "${data.template_file.health.rendered}"
+//}
+//
+//output "timeout" {
+//  value = "${var.health_timeout == 0 ? local.default_health_timeout : var.health_timeout}"
+//}

@@ -31,7 +31,8 @@ resource "aws_launch_configuration" "lc" {
 }
 
 resource "aws_autoscaling_group" "asg" {
-  name                      = "${aws_launch_configuration.lc.name}"
+  //  name                      = "${aws_launch_configuration.lc.name}"
+  name_prefix               = "${local.hostname}-"
   vpc_zone_identifier       = ["${var.subnet_ids}"]
   max_size                  = "${var.asg_max_size}"
   min_size                  = "${var.asg_min_size}"
@@ -55,7 +56,7 @@ resource "aws_autoscaling_group" "asg" {
   }
 
   provisioner "local-exec" {
-    interpreter = ["python", "-c"]
+    interpreter = ["python3", "-c"]
     command     = "${local.health_script}"
   }
 }
@@ -105,6 +106,11 @@ resource "aws_lb_listener_rule" "https" {
   }
 }
 
+/////////////////////////// SG //////////////////////////////
+locals {
+  ingress_cidr = "${ var.public_access ? "0.0.0.0/0" : "10.0.0.0/8"}"
+}
+
 resource "aws_security_group" "sg" {
   name_prefix = "${local.name}-SG-"
   description = "Security group to associate with ${var.full_name} servers in ${var.env_name} environment"
@@ -129,7 +135,7 @@ resource "aws_security_group_rule" "allow_icmp_10" {
   from_port         = 0
   to_port           = 0
   protocol          = "icmp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
@@ -139,7 +145,7 @@ resource "aws_security_group_rule" "allow_ssh_10" {
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
@@ -149,7 +155,7 @@ resource "aws_security_group_rule" "allow_rdp_10" {
   from_port         = 3389
   to_port           = 3389
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
@@ -159,7 +165,7 @@ resource "aws_security_group_rule" "allow_winrm_10" {
   from_port         = 5985
   to_port           = 5986
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
@@ -168,7 +174,7 @@ resource "aws_security_group_rule" "allow_service_10" {
   from_port         = "${var.service_port}"
   to_port           = "${var.service_port}"
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
@@ -178,7 +184,7 @@ resource "aws_security_group_rule" "allow_health_10" {
   from_port         = "${var.lb_health_check_port}"
   to_port           = "${var.lb_health_check_port}"
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
@@ -189,7 +195,7 @@ resource "aws_security_group_rule" "allow_consul1_10" {
   from_port         = 8300
   to_port           = 8302
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
@@ -199,7 +205,7 @@ resource "aws_security_group_rule" "allow_consul2_10" {
   from_port         = 8301
   to_port           = 8302
   protocol          = "udp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
@@ -209,6 +215,6 @@ resource "aws_security_group_rule" "allow_consul3_10" {
   from_port         = 8500
   to_port           = 8500
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }

@@ -108,6 +108,11 @@ variable "iam_policies" {
   description = "Optional. Required to access any other AWS resource"
 }
 
+variable "public_access" {
+  default = false
+  description = "Only for test pupropses. Open Security Groups to the world"
+}
+
 variable "key_name" {
   type        = "string"
   description = "Requiered. Admin access SSH key name"
