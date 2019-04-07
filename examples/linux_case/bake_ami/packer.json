@@ -30,8 +30,7 @@
       "type": "shell",
       "inline": [
         "sudo yum update -y",
-        "sudo yum install jq -y",
-        "sudo yum install python3 -y",
+        "sudo yum install python3  -y",
         "sudo mkdir -p /opt/bootstrap",
         "sudo mkdir -p /opt/myservice",
         "sudo chown ec2-user:ec2-user /opt/bootstrap",

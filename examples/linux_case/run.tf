@@ -27,10 +27,10 @@ module "linux" {
   //  lb_http_listener = ""
   //  lb_https_listener = ""
   params           = {
-    CONSUL_JOIN            = "\"provider=aws tag_key=consul_env tag_value=tttag\""
-    CONSUL_DATACENTER      = "abab"
-    CONSUL_DOMAIN          = "abab"
-    ENVIRONMENT            = "my"
+    CONSUL_JOIN            = "\"provider=aws tag_key=consul_env tag_value=my\""
+    CONSUL_DATACENTER      = "my_center"
+    CONSUL_DOMAIN          = "my.consul"
+    ENVIRONMENT            = "my_env"
     MYSERVICE_SPECIAL_INFO = "my_special_info"
   }
   env_name         = "my"
@@ -44,6 +44,7 @@ module "linux" {
 //  value = "${module.linux.health_script}"
 //}
 //
+
 //output "timeout" {
 //  value = "${module.linux.timeout}"
 //}

@@ -2,7 +2,8 @@
   "variables": {
     "aws_access_key": "{{env `AWS_ACCESS_KEY`}}",
     "aws_secret_key": "{{env `AWS_SECRET_KEY`}}",
-    "name": "example_windows_core_2016"
+    "version": "0.1.0",
+    "name": "myservice_windows_core_2016"
   },
   "builders": [
     {
@@ -29,23 +30,41 @@
   ],
   "provisioners": [
     {
-      "type": "file",
-      "source": "src/run.py",
-      "destination": "C:\\run.py"
-    },
-    {
-      "type": "file",
-      "source": "src/bootstrap.ps1",
-      "destination": "C:\\bootstrap\\1\\bootstrap.ps1"
-    },
-    {
       "type": "powershell",
       "inline": [
         "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))",
         "choco install python --version 3.6.0 -y",
-        "New-Service -Name \"dumbService\" -BinaryPathName \"C:\\Python36\\python.exe C:\\run.py\" -StartupType Automatic",
+        "New-Item -ItemType Directory -Force C:\\bootstrap\\1",
+        "New-Item -ItemType Directory -Force C:\\bootstrap\\2",
+        "New-Item -ItemType Directory -Force C:\\myservice",
         "C:\\ProgramData\\Amazon\\EC2-Windows\\Launch\\Scripts\\InitializeInstance.ps1 -Schedule"
       ]
+    },
+    {
+      "type": "powershell",
+      "script": "src/consul_install.ps1"
+    },
+    {
+      "type": "file",
+      "source": "src/consul_update.ps1",
+      "destination": "C:\\bootstrap\\1\\consul_update.ps1"
+    },
+    {
+      "type": "file",
+      "source": "src/run.py",
+      "destination": "C:\\myservice\\run.py"
+    },
+    {
+      "type": "powershell",
+      "environment_vars": [
+        "VERSION={{user `version`}}"
+      ],
+      "script": "src/myservice_install.ps1"
+    },
+    {
+      "type": "file",
+      "source": "src/myservice_update.ps1",
+      "destination": "C:\\bootstrap\\2\\myservice_update.ps1"
     }
   ]
 }
