@@ -9,7 +9,7 @@ New-Item -ItemType Directory -Force "$path\data"
 iwr -Uri $Url -OutFile "$path\consul.zip"
 Expand-Archive "$path\consul.zip" -DestinationPath $path -Force
 
-New-Service -Name $name -BinaryPathName "$path\consul.exe agent -config-file=\"$path\consul.json\" -config-dir=\"$path\config\" -data-dir=\"$path\data\"" -StartupType Automatic
+New-Service -Name consul -BinaryPathName "$path\consul.exe agent -config-file=$path\consul.json -config-dir=$path\config -data-dir=$path\data" -StartupType Automatic
 
 #Disable DNS response caching"
 Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters -Name MaxNegativeCacheTtl -Value 0 -Type DWord

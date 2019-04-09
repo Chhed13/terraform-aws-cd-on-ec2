@@ -1,13 +1,8 @@
 import http.server
-import  socketserver
+import socketserver
+import os
+import sys
 
-DIRECTORY = "./"
-
-class Handler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=DIRECTORY, **kwargs)
-
-
-with socketserver.TCPServer(("", 8000), Handler) as httpd:
+with socketserver.TCPServer(("", 8000), http.server.SimpleHTTPRequestHandler) as httpd:
+    if len(sys.argv) > 1: os.chdir(sys.argv[1])
     httpd.serve_forever()
-

@@ -1,19 +1,27 @@
-$version_tag = $env:version.Replace(".","_")
+$version_tag = $env:VERSION.Replace(".","_")
 $name = "MyService"
-$consul_name = $name.ToLower() # do not make camel case for DNS names. Better use lower everywhere
+$low_name = $name.ToLower() # do not make camel case for DNS names. Better use lower everywhere
 $port = 8000
 
-Write-Host "service install"
-New-Service -Name $name -BinaryPathName "C:\Python36\python.exe C:\$consul_name\run.py" -StartupType Automatic
+# run under NSSM
+#$nssmurl="http://nssm.cc/release/nssm-2.24.zip"
+#$nssmExe = "C:\$low_name\nssm.exe"
+#
+#[System.Net.ServicePointManager]::SecurityProtocol = 'Tls12'
+#iwr -Uri $nssmurl -OutFile "C:\$low_name\nssm.zip"
+#Expand-Archive "C:\$low_name\nssm.zip" -DestinationPath "C:\$low_name\nssm" -Force
+#Move-Item  "C:\$low_name\nssm\nssm-2.24\win64\nssm.exe" $nssmExe
+#Remove-Item -Recurse "C:\$low_name\nssm\"
 
-Write-Host "consul check install"
+& nssm install $low_name C:\Python36\python.exe C:\$low_name\run.py
+& nssm set $low_name AppDirectory C:\$low_name
 
 @"
 {
   "services": [
     {
-      "id": "$consul_name",
-      "name": "$consul_name",
+      "id": "$low_name",
+      "name": "$low_name",
       "port": $port,
       "tags": ["$version_tag"],
       "checks": [
@@ -26,10 +34,6 @@ Write-Host "consul check install"
     }
   ]
 }
-"@ | Out-File -Encoding ascii -FilePath "c:\consul\config\$consul_name.json"
-
-Write-Host "fw install"
+"@ | Out-File -Encoding ascii -FilePath "c:\consul\config\$low_name.json"
 
 New-NetFirewallRule -DisplayName $name -Direction Inbound -LocalPort $port -Protocol TCP -Action Allow
-
-Write-Host "done"

@@ -34,6 +34,7 @@
       "inline": [
         "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))",
         "choco install python --version 3.6.0 -y",
+        "choco install NSSM -y",
         "New-Item -ItemType Directory -Force C:\\bootstrap\\1",
         "New-Item -ItemType Directory -Force C:\\bootstrap\\2",
         "New-Item -ItemType Directory -Force C:\\myservice",
