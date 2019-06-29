@@ -130,6 +130,6 @@ variable "enable_consul" {
 
 variable "add_tags" {
   type        = "map"
-  default     = {  }
+  default     = {}
   description = "Map of additional tags to provide"
 }
