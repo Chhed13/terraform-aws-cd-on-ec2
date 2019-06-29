@@ -1,12 +1,14 @@
 # terraform-aws-cd-on-ec2
-Terraform framework module doing CD on simple ec2 instances
+Terraform framework module doing CD on simple ec2 instances in ASG
 
+![usage scheme](./schemas/cd-on-ec2.png)
 
 ## Usage
 
 ### Full featured case example
 
 Prerequisites: 
+* Terraform version >= 0.12
 * AWS acc
 * know how to create custom AMI
 * non-default VPC with private subnets
