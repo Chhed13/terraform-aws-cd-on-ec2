@@ -2,6 +2,7 @@ resource "aws_iam_role" "role" {
   name               = "IamRole-${local.name}"
   description        = "Role for the ${var.full_name} in ${var.env_name} environment"
   assume_role_policy = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"s3.amazonaws.com\",\"ec2.amazonaws.com\"]},\"Action\":\"sts:AssumeRole\"}]}"
+  tags               = local.tags
 }
 
 resource "aws_iam_role_policy_attachment" "attach" {
@@ -31,9 +32,8 @@ resource "aws_launch_configuration" "lc" {
 }
 
 resource "aws_autoscaling_group" "asg" {
-  //  name                      = "${aws_launch_configuration.lc.name}"
   name_prefix               = "${local.hostname}-"
-  vpc_zone_identifier       = ["${var.subnet_ids}"]
+  vpc_zone_identifier       = "${var.subnet_ids}"
   max_size                  = "${var.asg_max_size}"
   min_size                  = "${var.asg_min_size}"
   desired_capacity          = "${var.asg_desired_size}"
@@ -49,14 +49,21 @@ resource "aws_autoscaling_group" "asg" {
     create_before_destroy = true
   }
 
-  tag {
-    key                 = "Name"
-    value               = "${local.name}l"
-    propagate_at_launch = "True"
+  dynamic "tag" {
+    for_each = local.tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
   }
 
   provisioner "local-exec" {
     interpreter = ["python3", "-c"]
+    environment = {
+      HEALTH_TIMEOUT  = "${local.health_timeout}"
+      HEALTH_ENDPOINT = "${var.health_endpoint}"
+    }
     command     = "${local.health_script}"
   }
 }
@@ -68,6 +75,7 @@ resource "aws_lb_target_group" "tg" {
   protocol    = "HTTP"
   vpc_id      = "${data.aws_subnet.sn.vpc_id}"
   slow_start  = 30
+  tags        = local.tags
 
   health_check {
     path     = "${var.lb_health_check_path}"
@@ -80,12 +88,12 @@ resource "aws_lb_listener_rule" "http" {
   count        = "${var.lb_http_listener == "" ? 0 : 1}"
   listener_arn = "${var.lb_http_listener}"
 
-  "action" {
-    target_group_arn = "${aws_lb_target_group.tg.id}"
+  action {
+    target_group_arn = "${aws_lb_target_group.tg.0.id}"
     type             = "forward"
   }
 
-  "condition" {
+  condition {
     field  = "path-pattern"
     values = ["/${var.short_name}/*"]
   }
@@ -95,12 +103,12 @@ resource "aws_lb_listener_rule" "https" {
   count        = "${var.lb_https_listener == "" ? 0 : 1}"
   listener_arn = "${var.lb_https_listener}"
 
-  "action" {
-    target_group_arn = "${aws_lb_target_group.tg.id}"
+  action {
+    target_group_arn = "${aws_lb_target_group.tg.0.id}"
     type             = "forward"
   }
 
-  "condition" {
+  condition {
     field  = "path-pattern"
     values = ["/${var.short_name}/*"]
   }
@@ -115,10 +123,7 @@ resource "aws_security_group" "sg" {
   name_prefix = "${local.name}-SG-"
   description = "Security group to associate with ${var.full_name} servers in ${var.env_name} environment"
   vpc_id      = "${data.aws_subnet.sn.vpc_id}"
-
-  tags {
-    Name = "${local.name}-SG"
-  }
+  tags        = local.tags
 }
 
 resource "aws_security_group_rule" "allow_all_outbound" {
@@ -139,31 +144,20 @@ resource "aws_security_group_rule" "allow_icmp_10" {
   security_group_id = "${aws_security_group.sg.id}"
 }
 
-resource "aws_security_group_rule" "allow_ssh_10" {
-  count             = "${var.for_windows ? 0 : 1}"
+resource "aws_security_group_rule" "allow_remote_10" {
   type              = "ingress"
-  from_port         = 22
-  to_port           = 22
+  from_port         = "${var.for_windows ? 5985 : 22}"
+  to_port           = "${var.for_windows ? 5986 : 22}"
   protocol          = "tcp"
   cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
 resource "aws_security_group_rule" "allow_rdp_10" {
-  count             = "${var.for_windows}"
+  count             = "${var.for_windows ? 1 : 0}"
   type              = "ingress"
   from_port         = 3389
   to_port           = 3389
-  protocol          = "tcp"
-  cidr_blocks       = ["${local.ingress_cidr}"]
-  security_group_id = "${aws_security_group.sg.id}"
-}
-
-resource "aws_security_group_rule" "allow_winrm_10" {
-  count             = "${var.for_windows}"
-  type              = "ingress"
-  from_port         = 5985
-  to_port           = 5986
   protocol          = "tcp"
   cidr_blocks       = ["${local.ingress_cidr}"]
   security_group_id = "${aws_security_group.sg.id}"
@@ -189,32 +183,23 @@ resource "aws_security_group_rule" "allow_health_10" {
 }
 
 // followed the doc: https://www.consul.io/docs/agent/options.html#ports-used
-resource "aws_security_group_rule" "allow_consul1_10" {
-  count             = "${var.enable_consul}"
+resource "aws_security_group_rule" "allow_consul_serf_tcp" {
+  count             = "${var.enable_consul ? 1 : 0}"
   type              = "ingress"
-  from_port         = 8300
+  from_port         = 8301
   to_port           = 8302
   protocol          = "tcp"
-  cidr_blocks       = ["${local.ingress_cidr}"]
+  cidr_blocks       = ["10.0.0.0/8"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
-resource "aws_security_group_rule" "allow_consul2_10" {
-  count             = "${var.enable_consul}"
+resource "aws_security_group_rule" "allow_consul_serf_udp" {
+  count             = "${var.enable_consul ? 1 : 0}"
   type              = "ingress"
   from_port         = 8301
   to_port           = 8302
   protocol          = "udp"
-  cidr_blocks       = ["${local.ingress_cidr}"]
+  cidr_blocks       = ["10.0.0.0/8"]
   security_group_id = "${aws_security_group.sg.id}"
 }
 
-resource "aws_security_group_rule" "allow_consul3_10" {
-  count             = "${var.enable_consul}"
-  type              = "ingress"
-  from_port         = 8500
-  to_port           = 8500
-  protocol          = "tcp"
-  cidr_blocks       = ["${local.ingress_cidr}"]
-  security_group_id = "${aws_security_group.sg.id}"
-}

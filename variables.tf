@@ -10,18 +10,13 @@ variable "short_name" {
 }
 
 variable "ami_owner" {
-  type = "string"
-  description = "Required. Owner of AMI. Account ID or alias"
+  type        = "string"
+  description = "Required. Owner of AMI toi use. Account ID or alias"
 }
 
 variable "ami_name" {
   type        = "string"
-  description = "Required if other then {lower(var.full_name)}_{var.ami_version}. Name of the AMI to run from" //TODO: std prefix?
-}
-
-variable "ami_version" {
-  default     = "*"
-  description = "Version tag of the AMI. Default latest (*)"
+  description = "Required. Name of the AMI to run from. Good practice to have smth like {company_prefix}_{lower(var.full_name)}_{var.ami_version}"
 }
 
 variable bootstrap_dir {
@@ -30,28 +25,27 @@ variable bootstrap_dir {
   description = "Path to directory with bootstrap scripts. Default is /opt/bootstrap for Lunix and C:\\bootstrap on Windows"
 }
 
-variable "params" {
+variable "bootstrap_params" {
   type        = "map"
   default     = {}
   description = "Optional. Map of bootstrap parameters needed for bootstrap scripts"
 }
-
 
 variable "service_port" {
   description = "Requiered. Port on which service will listen"
 }
 //// Rotation policy //////////////////////
 variable "health_endpoint" {
-  type = "string"
-  default = ""
+  type        = "string"
+  default     = ""
   description = "Optional. If provided it uses to check is service up and running. Must be in format http://host:port/path"
 }
 
 variable "health_timeout" {
-  default = 0
+  default     = 0
   description = "Optional. Time in seconds to wait new instance to be ready. By default 240 (4min) for Linux and 480 (8min) for Windows"
 }
-//
+
 //// External balancing /////////////////
 variable "lb_http_listener" {
   default     = ""
@@ -99,7 +93,7 @@ variable "instance_type" {
 
 variable "subnet_ids" {
   type        = "list"
-  description = "Requiered. Subnets where to pu instances"
+  description = "Requiered. Subnets where to put instances"
 }
 
 variable "iam_policies" {
@@ -109,7 +103,7 @@ variable "iam_policies" {
 }
 
 variable "public_access" {
-  default = false
+  default     = false
   description = "Only for test pupropses. Open Security Groups to the world"
 }
 
@@ -121,17 +115,21 @@ variable "key_name" {
 // Environment and infra params //////////
 variable "env_name" {
   type        = "string"
-  description = "Requiered. Envrironment name to run in. Must be at least 1 letter. Usually inheretted from core_layer"
+  description = "Requiered. Envrironment name to run in. Must be at least 1 letter. Usually inheretted from base layer"
 }
 
 variable "for_windows" {
-  default = true
+  default     = true
   description = "True - apply for Windows, false - for Linux. Default false"
 }
 
 variable "enable_consul" {
-  default = false
+  default     = false
   description = "True - apply SG, tags for Consul"
 }
 
-//TODO: sort out with TAGS
+variable "add_tags" {
+  type        = "map"
+  default     = {  }
+  description = "Map of additional tags to provide"
+}

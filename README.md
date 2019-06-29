@@ -14,6 +14,10 @@ Prerequisites:
 * Consul cluster present
 * Consul DNS resolving is working
 * For external balancing: ALB listeners are prepared
+* For health check:
+  * `python3` command is working. Python 3.6 is expected
+  * package `requests` is installed.
+    * on Windows it should be installed separately by running `pip install requests` 
 
 Workflow:
 (for details - watch examples)

@@ -1,20 +1,20 @@
 import time
 import requests
+import os
 
-timeout = 120
+timeout = os.environ['HEALTH_TIMEOUT']
 start_time = time.time()
 while True:
 
   try:
-    r = requests.get('http://195.12.12.53:8000/health', verify=False, timeout=1)
+    r = requests.get(os.environ['HEALTH_ENDPOINT'], verify=False, timeout=1)
     if r.status_code == 200:
       break
 
   except requests.exceptions.ConnectionError:
     if time.time() - start_time < timeout:
-      print ('[Waiting]: service not ready yet, start sleep')
-      time.sleep(30)
+      time.sleep(15)
     else:
-      raise Exception('[Timeout]: service not ready')
+      raise Exception(f'[Timeout]: service not ready in {timeout} sec')
 
-print ('[Start tests]: service is ready')
+print (f'[Start tests]: service is ready in {int(time.time() - start_time)} sec')
