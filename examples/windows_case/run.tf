@@ -21,7 +21,6 @@ module "windows" {
 
   //  bootstrap_dir = ""
   enable_consul = false
-  public_access = true //only for test
   for_windows   = true
 
   //    health_endpoint = "http://128.53.75.4:8000/health"
@@ -51,5 +50,6 @@ module "windows" {
     version    = "0.1.1"
     consul_env = "my"
   }
+  security_groups_inbound_cidrs = ["0.0.0.0/0"] # only for test purposes
 }
 

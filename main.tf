@@ -8,7 +8,7 @@ resource "aws_iam_role" "role" {
 resource "aws_iam_role_policy_attachment" "attach" {
   count      = length(var.iam_policies)
   role       = aws_iam_role.role.name
-  policy_arn = element(var.iam_policies,count.index)
+  policy_arn = element(var.iam_policies, count.index)
 }
 
 resource "aws_iam_instance_profile" "profile" {
@@ -41,7 +41,7 @@ resource "aws_autoscaling_group" "asg" {
   health_check_type         = "EC2"
   default_cooldown          = 300
   launch_configuration      = aws_launch_configuration.lc.name
-  target_group_arns         = [element(concat(aws_lb_target_group.tg.*.id, list("")),0)]
+  target_group_arns         = [element(concat(aws_lb_target_group.tg.*.id, list("")), 0)]
   wait_for_capacity_timeout = "10m"
   termination_policies      = ["OldestInstance", "OldestLaunchConfiguration"]
 
@@ -114,11 +114,6 @@ resource "aws_lb_listener_rule" "https" {
   }
 }
 
-/////////////////////////// SG //////////////////////////////
-locals {
-  ingress_cidr = var.public_access ? "0.0.0.0/0" : "10.0.0.0/8"
-}
-
 resource "aws_security_group" "sg" {
   name_prefix = "${local.name}-SG-"
   description = "Security group to associate with ${var.full_name} servers in ${var.env_name} environment"
@@ -135,50 +130,50 @@ resource "aws_security_group_rule" "allow_all_outbound" {
   security_group_id = aws_security_group.sg.id
 }
 
-resource "aws_security_group_rule" "allow_icmp_10" {
+resource "aws_security_group_rule" "allow_icmp" {
   type              = "ingress"
   from_port         = 0
   to_port           = 0
   protocol          = "icmp"
-  cidr_blocks       = [local.ingress_cidr]
+  cidr_blocks       = local.cidr
   security_group_id = aws_security_group.sg.id
 }
 
-resource "aws_security_group_rule" "allow_remote_10" {
+resource "aws_security_group_rule" "allow_remote" {
   type              = "ingress"
   from_port         = var.for_windows ? 5985 : 22
   to_port           = var.for_windows ? 5986 : 22
   protocol          = "tcp"
-  cidr_blocks       = [local.ingress_cidr]
+  cidr_blocks       = local.cidr
   security_group_id = aws_security_group.sg.id
 }
 
-resource "aws_security_group_rule" "allow_rdp_10" {
+resource "aws_security_group_rule" "allow_rdp" {
   count             = var.for_windows ? 1 : 0
   type              = "ingress"
   from_port         = 3389
   to_port           = 3389
   protocol          = "tcp"
-  cidr_blocks       = [local.ingress_cidr]
+  cidr_blocks       = local.cidr
   security_group_id = aws_security_group.sg.id
 }
 
-resource "aws_security_group_rule" "allow_service_10" {
+resource "aws_security_group_rule" "allow_service" {
   type              = "ingress"
   from_port         = var.service_port
   to_port           = var.service_port
   protocol          = "tcp"
-  cidr_blocks       = [local.ingress_cidr]
+  cidr_blocks       = local.cidr
   security_group_id = aws_security_group.sg.id
 }
 
-resource "aws_security_group_rule" "allow_health_10" {
+resource "aws_security_group_rule" "allow_health" {
   count             = var.lb_health_check_port != 0 && var.lb_health_check_port != var.service_port ? 1 : 0
   type              = "ingress"
   from_port         = var.lb_health_check_port
   to_port           = var.lb_health_check_port
   protocol          = "tcp"
-  cidr_blocks       = [local.ingress_cidr]
+  cidr_blocks       = local.cidr
   security_group_id = aws_security_group.sg.id
 }
 
@@ -189,7 +184,7 @@ resource "aws_security_group_rule" "allow_consul_serf_tcp" {
   from_port         = 8301
   to_port           = 8302
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = local.cidr
   security_group_id = aws_security_group.sg.id
 }
 
@@ -199,7 +194,7 @@ resource "aws_security_group_rule" "allow_consul_serf_udp" {
   from_port         = 8301
   to_port           = 8302
   protocol          = "udp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = local.cidr
   security_group_id = aws_security_group.sg.id
 }
 

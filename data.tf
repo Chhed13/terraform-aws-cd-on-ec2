@@ -1,9 +1,10 @@
 locals {
-  name                  = format("%0.1s%s",lower(var.env_name),var.short_name)
+  name                  = format("%0.1s%s", lower(var.env_name), var.short_name)
   hostname              = "${local.name}${var.for_windows ? "w" : "l"}"
   default_bootstrap_dir = var.for_windows ? "C:\\bootstrap" : "/opt/bootstrap"
-  linux_params          = join(" ",formatlist("%s='%s'",keys(var.bootstrap_params),values(var.bootstrap_params)))
-  windows_params        = join("\n",formatlist("$env:%s=\"%s\"",keys(var.bootstrap_params),values(var.bootstrap_params)))
+  cidr                  = length(var.security_groups_inbound_cidrs) == 0 ? [data.aws_vpc.vpc.cidr_block] : var.security_groups_inbound_cidrs
+  linux_params          = join(" ", formatlist("%s='%s'", keys(var.bootstrap_params), values(var.bootstrap_params)))
+  windows_params        = join("\n", formatlist("$env:%s=\"%s\"", keys(var.bootstrap_params), values(var.bootstrap_params)))
 
   default_health_timeout = var.for_windows ? 480 : 240
   health_timeout         = var.health_timeout == 0 ? local.default_health_timeout : var.health_timeout
@@ -26,6 +27,10 @@ data "aws_ami" "image" {
 
 data aws_subnet sn {
   id = var.subnet_ids[0]
+}
+
+data "aws_vpc" "vpc" {
+  id = data.aws_subnet.sn.vpc_id
 }
 
 

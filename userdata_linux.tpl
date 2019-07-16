@@ -13,6 +13,6 @@ runcmd:
   - hostnamectl set-hostname ${hostname}-$(curl -s http://169.254.169.254/latest/meta-data/instance-id | tail -c 4)
   - cd ${bootstrap_dir}
   - export ${params}
-  - for D in ${bootstrap_dir}/*/; do for f in $D*.sh; do sh $f; done; done
+  - for f in $( ls $bootstrap_dir/*/*.sh ) ; do sh $f; done
 
 output : { all : '| tee -a /var/log/cloud-init-output.log' }

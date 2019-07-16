@@ -1,32 +1,32 @@
 // Source and service //////////////////
 variable "full_name" {
-  type        = "string"
+  type        = string
   description = "Required. Full name of service. Can be cammel case, but without spaces. Ex: MyService"
 }
 
 variable "short_name" {
-  type        = "string"
+  type        = string
   description = "Required. Short name of service. Only lower case, 2-4 letters. Ex: msr"
 }
 
 variable "ami_owner" {
-  type        = "string"
+  type        = string
   description = "Required. Owner of AMI toi use. Account ID or alias"
 }
 
 variable "ami_name" {
-  type        = "string"
+  type        = string
   description = "Required. Name of the AMI to run from. Good practice to have smth like {company_prefix}_{lower(var.full_name)}_{var.ami_version}"
 }
 
 variable bootstrap_dir {
-  type        = "string"
+  type        = string
   default     = ""
   description = "Path to directory with bootstrap scripts. Default is /opt/bootstrap for Lunix and C:\\bootstrap on Windows"
 }
 
 variable "bootstrap_params" {
-  type        = "map"
+  type        = map(string)
   default     = {}
   description = "Optional. Map of bootstrap parameters needed for bootstrap scripts"
 }
@@ -36,7 +36,7 @@ variable "service_port" {
 }
 //// Rotation policy //////////////////////
 variable "health_endpoint" {
-  type        = "string"
+  type        = string
   default     = ""
   description = "Optional. If provided it uses to check is service up and running. Must be in format http://host:port/path"
 }
@@ -49,19 +49,19 @@ variable "health_timeout" {
 //// External balancing /////////////////
 variable "lb_http_listener" {
   default     = ""
-  type        = "string"
+  type        = string
   description = "Requiered if {var.lb_user_http_listener} is true. Set rule to listen on /{var.middle_name}/* on provided listener"
 }
 
 variable "lb_https_listener" {
   default     = ""
-  type        = "string"
+  type        = string
   description = "Requiered if {var.lb_user_https_listener} is true. Set rule to listen on /{var.middle_name}/* on provided listener"
 }
 
 variable "lb_health_check_path" {
   default     = "/"
-  type        = "string"
+  type        = string
   description = "Optional. Health check path to set with listeners"
 }
 
@@ -87,34 +87,35 @@ variable "asg_desired_size" {
 }
 
 variable "instance_type" {
-  type        = "string"
+  type        = string
   description = "Requiered. Instance type according to AWS notation"
 }
 
 variable "subnet_ids" {
-  type        = "list"
+  type        = list(string)
   description = "Requiered. Subnets where to put instances"
 }
 
 variable "iam_policies" {
   default     = []
-  type        = "list"
+  type        = list(string)
   description = "Optional. Required to access any other AWS resource"
 }
 
-variable "public_access" {
-  default     = false
-  description = "Only for test pupropses. Open Security Groups to the world"
+variable "security_groups_inbound_cidrs" {
+  default     = []
+  type        = list(string)
+  description = "list of CIDRs from where to allow traffic (inbound rules). By default same as VPC CDIR"
 }
 
 variable "key_name" {
-  type        = "string"
+  type        = string
   description = "Requiered. Admin access SSH key name"
 }
 
 // Environment and infra params //////////
 variable "env_name" {
-  type        = "string"
+  type        = string
   description = "Requiered. Envrironment name to run in. Must be at least 1 letter. Usually inheretted from base layer"
 }
 
@@ -129,7 +130,7 @@ variable "enable_consul" {
 }
 
 variable "add_tags" {
-  type        = "map"
+  type        = map(string)
   default     = {}
   description = "Map of additional tags to provide"
 }
