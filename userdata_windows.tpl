@@ -14,13 +14,13 @@ ${params}
 
 if (Test-Path ${bootstrap_dir}) {
   foreach ($d in $(Get-ChildItem ${bootstrap_dir} -Directory)) {
-      foreach ($f in $(Get-ChildItem $d -File -Filter *.ps1)) {
+      foreach ($f in $(Get-ChildItem $d.FullName -File -Filter *.ps1)) {
           & $f.FullName
       }
   }
 }
 
-${custrom_script}
+${custom_script}
 
 Restart-Computer -Force
 </powershell>

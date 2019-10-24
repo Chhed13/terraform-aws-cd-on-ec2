@@ -1,6 +1,5 @@
 locals {
-  name                  = format("%0.1s%s", lower(var.env_name), var.short_name)
-  hostname              = "${local.name}${var.for_windows ? "w" : "l"}"
+  name                  = "${format("%0.1s%s", lower(var.env_name), var.short_name)}${var.for_windows ? "w" : "l"}"
   default_bootstrap_dir = var.for_windows ? "C:\\bootstrap" : "/opt/bootstrap"
   cidr                  = length(var.security_groups_inbound_cidrs) == 0 ? [data.aws_vpc.vpc.cidr_block] : var.security_groups_inbound_cidrs
   linux_params          = join(" ", formatlist("%s='%s'", keys(var.bootstrap_params), values(var.bootstrap_params)))
@@ -37,9 +36,9 @@ data "aws_vpc" "vpc" {
 data "template_file" "userdata" {
   template = file("${path.module}/${var.for_windows ? "userdata_windows.tpl" : "userdata_linux.tpl"}")
   vars     = {
-    hostname      = local.hostname
+    hostname      = local.name
     params        = var.for_windows ? local.windows_params : local.linux_params
     bootstrap_dir = var.bootstrap_dir == "" ? local.default_bootstrap_dir : var.bootstrap_dir
-    custrom_script = var.for_windows ? var.bootstrap_custom_script : base64encode(var.bootstrap_custom_script)
+    custom_script = var.for_windows ? var.bootstrap_custom_script : base64encode(var.bootstrap_custom_script)
   }
 }

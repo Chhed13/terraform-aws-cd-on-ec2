@@ -18,21 +18,20 @@ resource "aws_iam_instance_profile" "profile" {
 }
 
 resource "aws_launch_configuration" "lc" {
-  name_prefix          = "${local.hostname}-"
+  name_prefix          = "${local.name}-"
   image_id             = data.aws_ami.image.id
   instance_type        = var.instance_type
   key_name             = var.key_name
   security_groups      = [aws_security_group.sg.id]
-  user_data            = base64encode(data.template_file.userdata.rendered)
+  user_data_base64     = base64encode(data.template_file.userdata.rendered)
   iam_instance_profile = aws_iam_instance_profile.profile.name
-
   lifecycle {
     create_before_destroy = true
   }
 }
 
 resource "aws_autoscaling_group" "asg" {
-  name_prefix               = "${local.hostname}-"
+  name_prefix               = "${substr(aws_launch_configuration.lc.name,0,20)}-"
   vpc_zone_identifier       = var.subnet_ids
   max_size                  = var.asg_max_size
   min_size                  = var.asg_min_size
@@ -41,7 +40,8 @@ resource "aws_autoscaling_group" "asg" {
   health_check_type         = "EC2"
   default_cooldown          = 300
   launch_configuration      = aws_launch_configuration.lc.name
-  target_group_arns         = [element(concat(aws_lb_target_group.tg.*.id, list("")), 0)]
+  target_group_arns         = var.lb_http_listener == "" && var.lb_https_listener == "" ? [] : [
+    element(concat(aws_lb_target_group.tg.*.id, list("")), 0)]
   wait_for_capacity_timeout = "10m"
   termination_policies      = ["OldestInstance", "OldestLaunchConfiguration"]
 
