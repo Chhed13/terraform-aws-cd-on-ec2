@@ -40,5 +40,6 @@ data "template_file" "userdata" {
     hostname      = local.hostname
     params        = var.for_windows ? local.windows_params : local.linux_params
     bootstrap_dir = var.bootstrap_dir == "" ? local.default_bootstrap_dir : var.bootstrap_dir
+    custrom_script = var.for_windows ? var.bootstrap_custom_script : base64encode(var.bootstrap_custom_script)
   }
 }

@@ -20,5 +20,7 @@ if (Test-Path ${bootstrap_dir}) {
   }
 }
 
+${custrom_script}
+
 Restart-Computer -Force
 </powershell>

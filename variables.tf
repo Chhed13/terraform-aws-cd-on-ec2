@@ -31,6 +31,12 @@ variable "bootstrap_params" {
   description = "Optional. Map of bootstrap parameters needed for bootstrap scripts"
 }
 
+variable "bootstrap_custom_script" {
+  type        = string
+  default     = ""
+  description = "Optional. Allows fine tune start behavour (hot-fix, migrations etc.). Executes after all bootstrap scripts. Not recommended for permanent use."
+}
+
 variable "service_port" {
   description = "Requiered. Port on which service will listen"
 }
