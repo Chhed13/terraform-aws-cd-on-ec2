@@ -3,7 +3,7 @@ locals {
   default_bootstrap_dir = var.for_windows ? "C:\\bootstrap" : "/opt/bootstrap"
   cidr                  = length(var.security_groups_inbound_cidrs) == 0 ? [data.aws_vpc.vpc.cidr_block] : var.security_groups_inbound_cidrs
   linux_params          = join(" ", formatlist("%s='%s'", keys(var.bootstrap_params), values(var.bootstrap_params)))
-  windows_params        = join("\n", formatlist("$env:%s=\"%s\"", keys(var.bootstrap_params), values(var.bootstrap_params)))
+  windows_params        = join("\n", formatlist("$env:%s='%s'", keys(var.bootstrap_params), values(var.bootstrap_params)))
 
   default_health_timeout = var.for_windows ? 480 : 240
   health_timeout         = var.health_timeout == 0 ? local.default_health_timeout : var.health_timeout
