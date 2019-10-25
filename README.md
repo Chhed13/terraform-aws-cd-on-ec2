@@ -9,17 +9,20 @@ Terraform framework module doing CD on simple ec2 instances in ASG
 
 Prerequisites: 
 * Terraform version >= 0.12
-* AWS acc
+* AWS account
 * know how to create custom AMI
 * non-default VPC with private subnets
 * VPN into it
-* Consul cluster present
-* Consul DNS resolving is working
-* For external balancing: ALB listeners are prepared
+* For join to Consul cluster
+    * Consul cluster present
+* For external balancing
+    * ALB listeners are prepared
 * For health check:
   * `python3` command is working. Python 3.6 is expected
   * package `requests` is installed.
-    * on Windows it should be installed separately by running `pip install requests` 
+    * on Windows it should be installed separately by running `pip install requests`
+  * some fixed http endpoint exists for check
+    * it is convenient to use Consul DNS names with version tags for this  
 
 Workflow:
 (for details - watch examples)
@@ -32,8 +35,8 @@ Workflow:
     * include into install registration into Consul json. Provision it with healthcheck and version tag (in DNS compliant way)
     * put your service update script into `<bootstrap>/2` dir. It should use ENV variables as parameters
   * any other service - do the same.
-  * second layer of dirs in `<bootstrap>` dir will be execute in alphabetical order.
-  * AMI bake can be split into several bakes. First install base services (like Consul), next - app services
+  * second layer of dirs in `<bootstrap>` dir will be execute in alphabetical order.   
+  * AMI bake can be split into several stages. First install base services (like Consul), next - app services
   * It is very convenient to use Packer for this purposes. Watch examples 
   
 * run it with this module
