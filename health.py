@@ -7,7 +7,7 @@ start_time = time.time()
 while True:
 
   try:
-    r = requests.get(os.environ['HEALTH_ENDPOINT'], verify=False, timeout=1)
+    r = requests.get(os.environ['HEALTH_ENDPOINT'], verify=False)
     if r.status_code == 200:
       break
 
