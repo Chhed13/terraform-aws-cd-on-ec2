@@ -2,7 +2,7 @@ import time
 import requests
 import os
 
-timeout = os.environ['HEALTH_TIMEOUT']
+timeout = int(os.environ['HEALTH_TIMEOUT'])
 start_time = time.time()
 while True:
 
