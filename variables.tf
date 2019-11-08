@@ -122,7 +122,7 @@ variable "key_name" {
 // Environment and infra params //////////
 variable "env_name" {
   type        = string
-  description = "Requiered. Envrironment name to run in. Must be at least 1 letter. Usually inheretted from base layer"
+  description = "Reqiered. Envrironment tag on instance and prefix letter in name"
 }
 
 variable "for_windows" {
