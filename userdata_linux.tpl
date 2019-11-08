@@ -13,7 +13,7 @@ write_files:
   - path: ${bootstrap_dir}/final.sh
     encoding: base64
     content: |
-      ${custrom_script}
+      ${custom_script}
 
 runcmd:
   - hostnamectl set-hostname ${hostname}-$(curl -s http://169.254.169.254/latest/meta-data/instance-id | tail -c 4)
