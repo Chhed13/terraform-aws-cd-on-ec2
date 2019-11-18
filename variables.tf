@@ -126,7 +126,7 @@ variable "env_name" {
 }
 
 variable "for_windows" {
-  default     = true
+  default     = false
   description = "True - apply for Windows, false - for Linux. Default false"
 }
 
